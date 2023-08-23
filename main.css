@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* overflow: hidden; */
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  background-color: #181818;
+  /* height: 100vh; */
+}
+
+img {
+  max-width: 100%;
+}
+
+li,
+a {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 10%;
+  margin-top: 10px;
+}
+
+header h1 a {
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.links {
+  list-style: none;
+}
+
+.links li {
+  display: inline-block;
+  padding: 0px 20px;
+}
+
+.links li a {
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+}
+
+.links li a:hover {
+  color: #0088a9;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  padding: 10px 8%;
+}
+
+.gallery {
+  background-color: #282828;
+}
+
+.meme-editor-wrapper {
+  display: none;
+  background-color: #282828;
+}
+
+/* .editor-tools {
+ 
+} */
+
+/* Styling for Canvas Container */
+
+.canvas-container {
+  justify-content: center;
+  align-items: center;
+  background-color: #232323;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #282828;
+}
+
+.meme-img {
+  width: 310px;
+  height: 310px;
+  object-fit: cover;
+  margin: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.meme-img:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}

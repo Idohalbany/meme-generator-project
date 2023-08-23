@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meme Generator</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body onload="onInit()">
+    <header>
+      <!-- Navigation -->
+
+      <h1 class="logo"><a href="index.html">MEME GENERATOR</a></h1>
+      <nav class="nav">
+        <ul class="links">
+          <li>
+            <a onclick="onChangeSection(event, 'gallery')">templates Gallery</a>
+          </li>
+          <li>
+            <a onclick="onChangeSection(event, 'createMemes')">Create Meme</a>
+          </li>
+          <li>
+            <a onclick="onChangeSection(event ,'savedMemes')">Saved Memes</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content">
+      <!-- Gallery Section -->
+      <section class="gallery">
+        <!-- Gallery content -->
+      </section>
+
+      <!-- Meme Editor and Canvas Section -->
+      <section class="meme-editor-wrapper">
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+          <canvas width="800" height="800" id="meme-canvas"></canvas>
+        </div>
+
+        <!-- Editor Tools on the Right -->
+        <div class="editor-tools">
+          <input
+            type="color"
+            id="text-color"
+            placeholder="Choose text color"
+            onchange="onColorChange(this.value)" />
+
+          <input
+            type="text"
+            class="meme-text"
+            placeholder="Enter your meme text"
+            oninput="onTextChange(this.value)" />
+
+          <!--  editing feature buttons -->
+          <!-- Example: -->
+          <!-- <button>Rotate</button> -->
+          <button onclick="onChangeFontSize(2)" class="change-size">Increase Font</button>
+          <button onclick="onChangeFontSize(-2)" class="change-size">Decrease Font</button>
+          <button onclick="onAddLine()" class="add-line">Add Line</button>
+          <button onclick="onSwitchLine()" class="add-line">Switch Line</button>
+
+          <a href="#" id="download-link" class="btn-download" onclick="onDownloadMeme()"
+            >Download Meme</a
+          >
+        </div>
+      </section>
+
+      <section class="saved-memes-section">
+        <!-- saved memes rendering -->
+      </section>
+    </div>
+
+    <script src="js/services/memeService.js"></script>
+    <script src="js/galleryController.js"></script>
+    <script src="js/memeController.js"></script>
+  </body>
+</html>
