@@ -7,6 +7,7 @@ let gStartPos
 function onInit() {
   gElCanvas = document.getElementById('meme-canvas')
   gCtx = gElCanvas.getContext('2d')
+  gElCanvas.addEventListener('click', onCanvasClicked)
   renderMeme()
   renderGallery()
 }
@@ -32,7 +33,7 @@ function renderMeme() {
 }
 
 function drawText(line, idx) {
-  let yPos = (idx + 1) * line.size + 10
+  let yPos = (idx + 1) * (line.size + 30) + 10 + line.size
 
   gCtx.lineWidth = '2'
   gCtx.strokeStyle = 'black'
@@ -42,23 +43,62 @@ function drawText(line, idx) {
   gCtx.fillText(line.txt, gElCanvas.width / 2, yPos)
   gCtx.strokeText(line.txt, gElCanvas.width / 2, yPos)
 
+  const textWidth = gCtx.measureText(line.txt).width
+  const startX = (gElCanvas.width - textWidth) / 2
+  const startY = yPos - line.size
+  const rectWidth = textWidth
+  const rectHeight = line.size
+
+  setLinesProperties(idx, startX, startY, rectWidth, rectHeight)
+
   const meme = getMeme()
   const currentLine = meme.selectedLineIdx
 
   if (idx === currentLine) {
-    const textWidth = gCtx.measureText(line.txt).width
-    const padding = 10 // You can adjust this value as needed
-
-    const startX = (gElCanvas.width - textWidth) / 2 - padding
-    const startY = yPos - line.size - padding
-    const rectWidth = textWidth + 2 * padding
-    const rectHeight = line.size + 2 * padding
+    const padding = 10
 
     gCtx.beginPath()
     gCtx.strokeStyle = 'white'
-    gCtx.rect(startX, startY, rectWidth, rectHeight)
+    gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
     gCtx.stroke()
   }
+}
+
+function onCanvasClicked(ev) {
+  const { offsetX, offsetY } = ev
+  const lineIdx = getClickedLineIdx(offsetX, offsetY)
+  if (lineIdx !== -1) {
+    setSelectedLineIdx(lineIdx)
+    updateEditorForClickedLine()
+    renderMeme()
+  }
+}
+
+function getClickedLineIdx(x, y) {
+  console.log(`Clicked at: x=${x}, y=${y}`)
+
+  const meme = getMeme()
+
+  return meme.lines.findIndex(
+    (line) => x >= line.x && x <= line.x + line.width && y >= line.y && y <= line.y + line.height
+  )
+}
+
+function updateEditorForClickedLine() {
+  const meme = getMeme()
+  const selectedLine = meme.lines[meme.selectedLineIdx]
+
+  const elTxtInput = document.querySelector('.meme-text')
+  const elColorInput = document.getElementById('text-color')
+
+  elTxtInput.value = selectedLine.txt
+  elColorInput.value = selectedLine.color
+}
+
+function ondeleteLine() {
+  deleteLine()
+  renderMeme()
+  updateEditorForClickedLine()
 }
 
 function onAddLine() {

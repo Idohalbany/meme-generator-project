@@ -35,8 +35,22 @@ var gMeme = {
       txt: 'And shit myself',
       size: 20,
       color: 'white',
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
     },
   ],
+}
+
+function setLinesProperties(lineIdx, x, y, width, height) {
+  const line = gMeme.lines[lineIdx]
+  if (line) {
+    line.x = x
+    line.y = y
+    line.width = width
+    line.height = height
+  }
 }
 
 function getMeme() {
@@ -60,6 +74,10 @@ function getSelectedLineIdx() {
   return gMeme.selectedLineIdx
 }
 
+function setSelectedLineIdx(idx) {
+  gMeme.selectedLineIdx = idx
+}
+
 function setLineTxt(txt) {
   let lineIdx = gMeme.selectedLineIdx
   gMeme.lines[lineIdx].txt = txt
@@ -74,8 +92,26 @@ function updateFontSize(selectedLineIdx, num) {
 }
 
 function addLine() {
-  gMeme.lines.push({ txt: 'New Line', size: 20, color: 'white' })
+  gMeme.lines.push({
+    txt: 'New Line',
+    size: 20,
+    color: 'white',
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  })
   gMeme.selectedLineIdx = gMeme.lines.length - 1
+}
+
+function deleteLine() {
+  if (gMeme.lines.length === 0) return
+
+  gMeme.lines.splice(gMeme.selectedLineIdx, 1)
+
+  if (gMeme.selectedLineIdx >= gMeme.lines.length) {
+    gMeme.selectedLineIdx = gMeme.lines.length - 1
+  }
 }
 
 function switchLine() {
