@@ -48,51 +48,86 @@
 
         <!-- Editor Tools on the Right -->
         <div class="editor-tools">
-          <input
-            type="color"
-            id="text-color"
-            placeholder="Choose text color"
-            onchange="onColorChange(this.value)" />
+          <!-- Text Controls -->
+          <div class="text-controls">
+            <input
+              type="text"
+              class="meme-text"
+              placeholder="Enter your meme text"
+              oninput="onTextChange(this.value)" />
+            <input
+              type="color"
+              id="text-color"
+              placeholder="Choose text color"
+              onchange="onColorChange(this.value)" />
+            <select
+              onchange="onChangeFontFamily(this.value)"
+              name="font-family"
+              class="font-family">
+              <option value="">Font Family</option>
+              <option value="Impact">Impact</option>
+              <option value="Ariel">Ariel</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+            </select>
+          </div>
 
-          <input
-            type="text"
-            class="meme-text"
-            placeholder="Enter your meme text"
-            oninput="onTextChange(this.value)" />
+          <!-- Size Controls -->
+          <div class="size-controls">
+            <button onclick="onChangeFontSize(2)" class="change-size">Increase Font</button>
+            <button onclick="onChangeFontSize(-2)" class="change-size">Decrease Font</button>
+            <input
+              oninput="onSetSizeSelector(event, this.value)"
+              type="range"
+              min="10"
+              max="100"
+              value="30"
+              class="size-selector" />
+          </div>
 
-          <!--  editing feature buttons -->
-          <!-- Example: -->
-          <!-- <button>Rotate</button> -->
-          <select onchange="onChangeFontFamily(this.value)" name="font-family" class="font-family">
-            <option value="">Font Family</option>
-            <option value="Impact">Impact</option>
-            <option value="Ariel">Ariel</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Tahoma">Tahoma</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Comic Sans MS">Comic Sans MS</option>
-          </select>
-          <button onclick="onChangeFontSize(2)" class="change-size">Increase Font</button>
-          <button onclick="onChangeFontSize(-2)" class="change-size">Decrease Font</button>
-          <input
-            oninput="onSetSizeSelector(event, this.value)"
-            type="range"
-            min="10"
-            max="100"
-            value="30"
-            class="size-selector" />
-          <button onclick="onAddLine()" class="add-line">Add Line</button>
-          <button onclick="onSwitchLine()" class="add-line">Switch Line</button>
-          <button onclick="onChangeTextAlignment('left')" class="align-btn">Left</button>
-          <button onclick="onChangeTextAlignment('center')" class="align-btn">center</button>
-          <button onclick="onChangeTextAlignment('right')" class="align-btn">right</button>
-          <button onclick="onMoveLine('up')">Move Up</button>
-          <button onclick="onMoveLine('down')">Move Down</button>
-          <button onclick="ondeleteLine()" class="delete-line">Delete</button>
+          <!-- Line Controls -->
+          <div class="line-controls">
+            <button onclick="onAddLine()" class="add-line">Add Line</button>
+            <button onclick="onSwitchLine()" class="add-line">Switch Line</button>
+            <button onclick="ondeleteLine()" class="delete-line">Delete Line</button>
+          </div>
 
-          <a href="#" id="download-link" class="btn-download" onclick="onDownloadMeme()"
-            >Download Meme</a
-          >
+          <!-- Alignment Controls -->
+          <div class="alignment-controls">
+            <button onclick="onChangeTextAlignment('left')" class="align-btn">Left</button>
+            <button onclick="onChangeTextAlignment('center')" class="align-btn">Center</button>
+            <button onclick="onChangeTextAlignment('right')" class="align-btn">Right</button>
+          </div>
+
+          <!-- Position Controls -->
+          <div class="position-controls">
+            <button onclick="onMoveLine('up')" class="move-line">Move Up</button>
+            <button onclick="onMoveLine('down')" class="move-line">Move Down</button>
+          </div>
+
+          <!-- New Features Controls -->
+          <div class="new-features">
+            <button onclick="onRotateLine()" class="rotate-line">Rotate Line</button>
+            <button onclick="onGenerateRandomMeme()" class="btn-flexible">I'm Flexible</button>
+            <button onclick="onAddSticker('😜')" class="sticker-selector">😜</button>
+            <button onclick="onAddSticker('😍')" class="sticker-selector">😍</button>
+            <button onclick="onShareFacebook()" class="share-facebook">Share on Facebook</button>
+          </div>
+
+          <!-- Download Control -->
+          <div class="download-control">
+            <a href="#" id="download-link" class="btn-download" onclick="onDownloadMeme()"
+              >Download Meme</a
+            >
+            <input
+              type="file"
+              class="pick-image-device"
+              onchange="onPickImage(this)"
+              accept="image/*" />
+            <button onclick="onSaveMeme()" class="save-btn">Save</button>
+          </div>
         </div>
       </section>
 
@@ -100,7 +135,7 @@
         <!-- saved memes rendering -->
       </section>
     </div>
-
+    <script src="js/services/memeservice.storage.js"></script>
     <script src="js/services/memeService.js"></script>
     <script src="js/galleryController.js"></script>
     <script src="js/memeController.js"></script>

@@ -51,6 +51,21 @@ var gMeme = {
   ],
 }
 
+const gRandomTexts = [
+  'Why so serious?',
+  'Is this a meme?',
+  'I can haz randomness',
+  'Such wow!',
+  'Stay random, my friend',
+  'Memes gonna meme',
+  'Randomize me, captain!',
+  'Just another meme day',
+  'Meme magic!',
+  'Roll the dice, get a meme',
+]
+
+var gSavedMeme
+
 function setLinesProperties(lineIdx, x, y, width, height) {
   const line = gMeme.lines[lineIdx]
   if (line) {
@@ -63,6 +78,10 @@ function setLinesProperties(lineIdx, x, y, width, height) {
 
 function getMeme() {
   return gMeme
+}
+
+function setMeme(meme) {
+  gMeme = meme
 }
 
 function getImgs() {
@@ -129,6 +148,31 @@ function addLine() {
     height: 0,
   })
   gMeme.selectedLineIdx = gMeme.lines.length - 1
+}
+
+function generateRandomMeme() {
+  const randomImgIndex = Math.floor(Math.random() * gImgs.length)
+  const randomTxtIndex = Math.floor(Math.random() * gRandomTexts.length)
+
+  const randomImg = gImgs[randomImgIndex]
+  const randomTxt = gRandomTexts[randomTxtIndex]
+
+  gMeme.selectedImgId = randomImg.id
+  gMeme.selectedLineIdx = 0
+  gMeme.lines[0].txt = randomTxt
+
+  if (gMeme.lines.length > 1) gMeme.lines.splice(1)
+}
+
+function saveMeme() {
+  gSavedMeme = getSavedMemes()
+  const savedMeme = JSON.parse(JSON.stringify(gMeme))
+  gSavedMeme.push(savedMeme)
+  saveToStorage('memesDB', gSavedMeme)
+}
+
+function getSavedMemes() {
+  return loadFromStorage('memesDB') || []
 }
 
 function deleteLine() {

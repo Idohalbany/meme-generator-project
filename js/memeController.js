@@ -42,6 +42,43 @@ function renderMeme() {
   img.src = imgUrl
 }
 
+function onGenerateRandomMeme() {
+  generateRandomMeme()
+  renderMeme()
+}
+
+function onSaveMeme() {
+  saveMeme()
+  // renderSavedMemes()
+}
+
+function renderSavedMemes() {
+  const savedMemes = getSavedMemes()
+  const elSavedMemesSection = document.querySelector('.saved-memes-section')
+
+  const strHTMLs = savedMemes.map((meme, idx) => {
+    const imgs = getImgs()
+    const memeImg = imgs.find((img) => img.id === meme.selectedImgId)
+    const imgUrl = memeImg ? memeImg.url : `img/1.jpg`
+
+    return `
+            <div onclick="onEditMeme(${idx});">
+                <img src="${imgUrl}" alt="Saved Meme ${idx}" class="meme-img">
+            </div>`
+  })
+
+  elSavedMemesSection.innerHTML = strHTMLs.join('')
+}
+
+function onEditMeme(memeIdx) {
+  const savedMemes = getSavedMemes()
+  const memeToEdit = savedMemes[memeIdx]
+  setImg(memeToEdit.selectedImgId)
+  renderMeme()
+  toggleDisplay('.saved-memes-section', false)
+  toggleDisplay('.meme-editor-wrapper', true)
+}
+
 function drawText(line, idx) {
   styleText(line)
 
@@ -52,13 +89,7 @@ function drawText(line, idx) {
   gCtx.fillText(line.txt, xPos, yPos)
   gCtx.strokeText(line.txt, xPos, yPos)
 
-  const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(
-    line,
-    idx,
-    yPos,
-    xPos,
-    textWidth
-  )
+  const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(line, yPos, xPos, textWidth)
 
   const meme = getMeme()
   const currentLine = meme.selectedLineIdx
@@ -95,7 +126,7 @@ function onMoveLine(direction) {
   renderMeme()
 }
 
-function defineBoundingBox(line, idx, yPos, xPos, textWidth) {
+function defineBoundingBox(line, yPos, xPos, textWidth) {
   let startX
   switch (line.align) {
     case 'left':
@@ -138,13 +169,7 @@ function onCanvasClicked(ev) {
     const xPos = calculateTextPosition(line)
     const yPos = line.pos.y
 
-    const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(
-      line,
-      idx,
-      yPos,
-      xPos,
-      textWidth
-    )
+    const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(line, yPos, xPos, textWidth)
     const padding = 10
 
     if (
@@ -231,8 +256,10 @@ function onChangeTextAlignment(alignment) {
 
 function toggleDisplay(elSelector, isShown) {
   const el = document.querySelector(elSelector)
-  if (isShown) el.style.display = 'grid'
-  else el.style.display = 'none'
+  if (el) {
+    if (isShown) el.style.display = 'grid'
+    else el.style.display = 'none'
+  }
 }
 
 function onChangeSection(ev, sectionName) {
@@ -248,8 +275,9 @@ function onChangeSection(ev, sectionName) {
     case 'createMemes':
       toggleDisplay('.meme-editor-wrapper', true)
       break
-    case 'gallery':
-      toggleDisplay('.saved-meme-section', true)
+    case 'savedMemes':
+      toggleDisplay('.saved-memes-section', true)
+      renderSavedMemes()
       break
   }
 }
