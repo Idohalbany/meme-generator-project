@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meme Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" href="main.css" />
   </head>
   <body onload="onInit()">
@@ -14,7 +17,7 @@
       <nav class="nav">
         <ul class="links">
           <li>
-            <a onclick="onChangeSection(event, 'gallery')">templates Gallery</a>
+            <a onclick="onChangeSection(event, 'gallery')">Templates Gallery</a>
           </li>
           <li>
             <a onclick="onChangeSection(event, 'createMemes')">Create Meme</a>
@@ -24,11 +27,12 @@
           </li>
         </ul>
       </nav>
+      <i onclick="toggleMenu('open')" class="mobile-menu fa-solid fa-bars"></i>
+      <i onclick="toggleMenu('close')" class="close-menu fa-solid fa-x"></i>
     </header>
 
     <!-- Main Content Wrapper -->
     <div class="main-content">
-      <!-- Gallery Section -->
       <section class="gallery">
         <!-- Gallery content -->
       </section>
@@ -36,8 +40,10 @@
       <!-- Meme Editor and Canvas Section -->
       <section class="meme-editor-wrapper">
         <!-- Canvas Container -->
-        <div class="canvas-container">
-          <canvas width="800" height="800" id="meme-canvas"></canvas>
+        <div class="canvas-wrapper">
+          <div class="canvas-container">
+            <canvas width="800" height="800" id="meme-canvas"></canvas>
+          </div>
         </div>
 
         <!-- Editor Tools on the Right -->

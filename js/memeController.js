@@ -12,6 +12,19 @@ function onInit() {
   renderGallery()
 }
 
+window.addEventListener('resize', () => {
+  resizeCanvas()
+  renderMeme()
+})
+
+function resizeCanvas() {
+  const canvasContainer = document.querySelector('.canvas-container')
+  gElCanvas.width = canvasContainer.clientWidth
+  gElCanvas.height = canvasContainer.clientHeight
+  console.log('Resizing canvas...')
+  console.log('Container size:', canvasContainer.clientWidth, canvasContainer.clientHeight)
+}
+
 function renderMeme() {
   let meme = getMeme()
 
@@ -22,7 +35,6 @@ function renderMeme() {
   let img = new Image()
 
   img.onload = function () {
-    // Draw the image on the canvas
     gCtx.drawImage(img, 0, 0, gElCanvas.width, gElCanvas.height)
     meme.lines.forEach((line, idx) => {
       drawText(line, idx)
@@ -130,7 +142,7 @@ function onChangeFontSize(num) {
 
 function toggleDisplay(elSelector, isShown) {
   const el = document.querySelector(elSelector)
-  if (isShown) el.style.display = 'block'
+  if (isShown) el.style.display = 'grid'
   else el.style.display = 'none'
 }
 
@@ -158,4 +170,20 @@ function onDownloadMeme() {
   downloadLink.href = gElCanvas.toDataURL('image/jpeg')
   downloadLink.download = 'my-meme.jpg'
   downloadLink.click()
+}
+
+function toggleMenu(state) {
+  const elMobileMenu = document.querySelector('.mobile-menu')
+  const elCloseMenu = document.querySelector('.close-menu')
+  const elNavBar = document.querySelector('.nav')
+
+  if (state === 'open') {
+    elMobileMenu.style.display = 'none'
+    elCloseMenu.style.display = 'block'
+    elNavBar.style.display = 'flex'
+  } else {
+    elMobileMenu.style.display = ''
+    elCloseMenu.style.display = 'none'
+    elNavBar.style.display = ''
+  }
 }

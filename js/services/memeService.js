@@ -34,6 +34,7 @@ var gMeme = {
     {
       txt: 'And shit myself',
       size: 20,
+
       color: 'white',
       x: 0,
       y: 0,
