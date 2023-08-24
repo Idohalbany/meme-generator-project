@@ -21,8 +21,6 @@ function resizeCanvas() {
   const canvasContainer = document.querySelector('.canvas-container')
   gElCanvas.width = canvasContainer.clientWidth
   gElCanvas.height = canvasContainer.clientHeight
-  console.log('Resizing canvas...')
-  console.log('Container size:', canvasContainer.clientWidth, canvasContainer.clientHeight)
 }
 
 function renderMeme() {
@@ -45,50 +43,124 @@ function renderMeme() {
 }
 
 function drawText(line, idx) {
-  let yPos = (idx + 1) * (line.size + 30) + 10 + line.size
-
-  gCtx.lineWidth = '2'
-  gCtx.strokeStyle = 'black'
-  gCtx.fillStyle = line.color
-  gCtx.font = `${line.size}px Arial`
-  gCtx.textAlign = 'center'
-  gCtx.fillText(line.txt, gElCanvas.width / 2, yPos)
-  gCtx.strokeText(line.txt, gElCanvas.width / 2, yPos)
+  styleText(line)
 
   const textWidth = gCtx.measureText(line.txt).width
-  const startX = (gElCanvas.width - textWidth) / 2
-  const startY = yPos - line.size
-  const rectWidth = textWidth
-  const rectHeight = line.size
+  const xPos = calculateTextPosition(line)
+  const yPos = line.pos.y
 
-  setLinesProperties(idx, startX, startY, rectWidth, rectHeight)
+  gCtx.fillText(line.txt, xPos, yPos)
+  gCtx.strokeText(line.txt, xPos, yPos)
+
+  const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(
+    line,
+    idx,
+    yPos,
+    xPos,
+    textWidth
+  )
 
   const meme = getMeme()
   const currentLine = meme.selectedLineIdx
 
   if (idx === currentLine) {
-    const padding = 10
-
-    gCtx.beginPath()
-    gCtx.strokeStyle = 'white'
-    gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
-    gCtx.stroke()
+    drawBoundingBox(startX, startY, rectWidth, rectHeight)
   }
 }
 
+function styleText(line) {
+  gCtx.lineWidth = '1'
+  gCtx.strokeStyle = `${line.strokeColor}`
+  gCtx.fillStyle = line.color
+  gCtx.font = `${line.size}px ${line.font}`
+  gCtx.textAlign = line.align
+}
+
+function calculateTextPosition(line) {
+  const padding = 10
+  switch (line.align) {
+    case 'left':
+      return padding
+    case 'right':
+      return gElCanvas.width - padding
+    case 'center':
+    default:
+      return gElCanvas.width / 2
+  }
+}
+
+function onMoveLine(direction) {
+  const diff = direction === 'up' ? -5 : 5
+  moveLine(diff, 'y')
+  renderMeme()
+}
+
+function defineBoundingBox(line, idx, yPos, xPos, textWidth) {
+  let startX
+  switch (line.align) {
+    case 'left':
+      startX = xPos
+      break
+    case 'right':
+      startX = xPos - textWidth
+      break
+    case 'center':
+    default:
+      startX = xPos - textWidth / 2
+      break
+  }
+  const startY = yPos - line.size
+  return {
+    startX: startX,
+    startY: startY,
+    rectWidth: textWidth,
+    rectHeight: line.size,
+  }
+}
+
+function drawBoundingBox(startX, startY, rectWidth, rectHeight) {
+  const padding = 10
+  gCtx.beginPath()
+  gCtx.strokeStyle = 'white'
+  gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
+  gCtx.stroke()
+}
+
 function onCanvasClicked(ev) {
-  const { offsetX, offsetY } = ev
-  const lineIdx = getClickedLineIdx(offsetX, offsetY)
-  if (lineIdx !== -1) {
-    setSelectedLineIdx(lineIdx)
-    updateEditorForClickedLine()
-    renderMeme()
+  const meme = getMeme()
+
+  const adjustedX = ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth)
+  const adjustedY = ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight)
+
+  for (let idx = meme.lines.length - 1; idx >= 0; idx--) {
+    const line = meme.lines[idx]
+    const textWidth = gCtx.measureText(line.txt).width
+    const xPos = calculateTextPosition(line)
+    const yPos = line.pos.y
+
+    const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(
+      line,
+      idx,
+      yPos,
+      xPos,
+      textWidth
+    )
+    const padding = 10
+
+    if (
+      adjustedX >= startX - padding &&
+      adjustedX <= startX + rectWidth + padding &&
+      adjustedY >= startY - padding &&
+      adjustedY <= startY + rectHeight + padding
+    ) {
+      meme.selectedLineIdx = idx
+      renderMeme()
+      break
+    }
   }
 }
 
 function getClickedLineIdx(x, y) {
-  console.log(`Clicked at: x=${x}, y=${y}`)
-
   const meme = getMeme()
 
   return meme.lines.findIndex(
@@ -137,6 +209,23 @@ function onColorChange(color) {
 function onChangeFontSize(num) {
   const selectedLineIdx = getSelectedLineIdx()
   updateFontSize(selectedLineIdx, num)
+  renderMeme()
+}
+
+function onChangeFontFamily(font) {
+  changeFontFamily(font)
+  renderMeme()
+}
+
+function onSetSizeSelector(ev, size) {
+  ev.target.setAttribute('value', size)
+  const selectedSize = +size
+  setFontSize(selectedSize)
+  renderMeme()
+}
+
+function onChangeTextAlignment(alignment) {
+  changeTextAlignment(alignment)
   renderMeme()
 }
 

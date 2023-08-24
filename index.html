@@ -63,10 +63,31 @@
           <!--  editing feature buttons -->
           <!-- Example: -->
           <!-- <button>Rotate</button> -->
+          <select onchange="onChangeFontFamily(this.value)" name="font-family" class="font-family">
+            <option value="">Font Family</option>
+            <option value="Impact">Impact</option>
+            <option value="Ariel">Ariel</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Tahoma">Tahoma</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+          </select>
           <button onclick="onChangeFontSize(2)" class="change-size">Increase Font</button>
           <button onclick="onChangeFontSize(-2)" class="change-size">Decrease Font</button>
+          <input
+            oninput="onSetSizeSelector(event, this.value)"
+            type="range"
+            min="10"
+            max="100"
+            value="30"
+            class="size-selector" />
           <button onclick="onAddLine()" class="add-line">Add Line</button>
           <button onclick="onSwitchLine()" class="add-line">Switch Line</button>
+          <button onclick="onChangeTextAlignment('left')" class="align-btn">Left</button>
+          <button onclick="onChangeTextAlignment('center')" class="align-btn">center</button>
+          <button onclick="onChangeTextAlignment('right')" class="align-btn">right</button>
+          <button onclick="onMoveLine('up')">Move Up</button>
+          <button onclick="onMoveLine('down')">Move Down</button>
           <button onclick="ondeleteLine()" class="delete-line">Delete</button>
 
           <a href="#" id="download-link" class="btn-download" onclick="onDownloadMeme()"

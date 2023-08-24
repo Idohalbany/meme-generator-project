@@ -27,17 +27,24 @@ var gMeme = {
   selectedLineIdx: 0,
   lines: [
     {
-      txt: 'I sometimes eat Falafel',
-      size: 20,
-      color: 'red',
+      txt: 'New Line',
+      size: 25,
+      color: 'white',
+      strokeColor: 'black',
+      font: 'Impact',
+      align: 'center',
+      pos: { x: 0, y: 90 },
+      width: 0,
+      height: 0,
     },
     {
-      txt: 'And shit myself',
-      size: 20,
-
+      txt: 'New Line',
+      size: 25,
       color: 'white',
-      x: 0,
-      y: 0,
+      strokeColor: 'black',
+      font: 'Impact',
+      align: 'center',
+      pos: { x: 0, y: 150 },
       width: 0,
       height: 0,
     },
@@ -92,13 +99,32 @@ function updateFontSize(selectedLineIdx, num) {
   gMeme.lines[selectedLineIdx].size += num
 }
 
+function setFontSize(selectedSize) {
+  gMeme.lines[gMeme.selectedLineIdx].size = selectedSize
+}
+
+function changeFontFamily(font) {
+  gMeme.lines[gMeme.selectedLineIdx].font = font
+}
+
+function changeTextAlignment(alignment) {
+  gMeme.lines[gMeme.selectedLineIdx].align = alignment
+}
+
+function moveLine(diff, dir) {
+  const line = gMeme.lines[gMeme.selectedLineIdx]
+  line.pos[dir] += diff
+}
+
 function addLine() {
   gMeme.lines.push({
     txt: 'New Line',
-    size: 20,
+    size: 25,
     color: 'white',
-    x: 0,
-    y: 0,
+    strokeColor: 'black',
+    font: 'Impact',
+    align: 'center',
+    pos: { x: 0, y: 120 },
     width: 0,
     height: 0,
   })

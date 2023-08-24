@@ -124,6 +124,24 @@ header h1 a {
   opacity: 0.9;
 }
 
+.size-selector {
+  position: relative;
+  width: 200px;
+}
+
+.size-selector::after {
+  content: attr(value);
+  position: absolute;
+  top: -1.5em;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  background-color: #ffffff;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 2em;
+}
+
 @media screen and (max-width: 1180px) {
   .mobile-menu,
   .close-menu {

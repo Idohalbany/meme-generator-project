@@ -19,4 +19,3 @@ function onImgSelect(imgId) {
   toggleDisplay('.gallery', false)
   toggleDisplay('.meme-editor-wrapper', true)
 }
-
