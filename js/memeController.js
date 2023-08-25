@@ -3,6 +3,8 @@
 let gElCanvas
 let gCtx
 let gStartPos = null
+var gIsLineClicked = false
+let isInsideText
 
 function onInit() {
   gElCanvas = document.getElementById('meme-canvas')
@@ -18,10 +20,6 @@ function addListeners() {
     resizeCanvas()
     renderMeme()
   })
-
-  gElCanvas.addEventListener('mousedown', onMouseDown)
-  gElCanvas.addEventListener('mousemove', onMouseMove)
-  gElCanvas.addEventListener('mouseup', onMouseUp)
 
   // Text Size Controls
   document
@@ -61,7 +59,7 @@ function addListeners() {
   document.querySelectorAll('.sticker-selector').forEach((sticker) => {
     sticker.addEventListener('click', (e) => onAddSticker(e.target.innerText))
   })
-  // document.querySelector('.share-facebook').addEventListener('click', onShareFacebook)
+  document.querySelector('.share-facebook').addEventListener('click', onShareFacebook)
 
   // Emoji Dropdown
   document.querySelector('.emoji-dropdown button').addEventListener('click', toggleEmojiMenu)
@@ -72,6 +70,10 @@ function addListeners() {
   // Download Control
   document.querySelector('.btn-download').addEventListener('click', onDownloadMeme)
   document.querySelector('.save-btn').addEventListener('click', onSaveMeme)
+
+  gElCanvas.addEventListener('mousedown', onMouseDown)
+  gElCanvas.addEventListener('mousemove', onMouseMove)
+  gElCanvas.addEventListener('mouseup', onMouseUp)
 }
 
 function resizeCanvas() {
@@ -81,22 +83,20 @@ function resizeCanvas() {
 }
 
 function renderMeme() {
-  let meme = getMeme()
+  const meme = getMeme()
 
   if (!meme) return
+  let imgUrl = meme.uploadedImgUrl ? meme.uploadedImgUrl : getImgUrlById(meme.selectedImgId)
 
-  let imgUrl = getImgUrlById(meme.selectedImgId)
-
-  let img = new Image()
-
-  img.onload = function () {
-    gCtx.drawImage(img, 0, 0, gElCanvas.width, gElCanvas.height)
+  let imgToRender = new Image()
+  imgToRender.onload = function () {
+    gCtx.clearRect(0, 0, gElCanvas.width, gElCanvas.height)
+    gCtx.drawImage(imgToRender, 0, 0, gElCanvas.width, gElCanvas.height)
     meme.lines.forEach((line, idx) => {
       drawText(line, idx)
     })
   }
-
-  img.src = imgUrl
+  imgToRender.src = imgUrl
 }
 
 function onMouseDown(ev) {
@@ -115,8 +115,8 @@ function onMouseDown(ev) {
       line.pos.x,
       gCtx.measureText(line.txt).width
     )
-
-    if (isPointInRect(clickPos, boundingBox, 10)) {
+    updateEditorForClickedLine()
+    if (isPointInRect(clickPos, boundingBox, 15)) {
       meme.selectedLineIdx = i
       line.isDrag = true
       gStartPos = clickPos
@@ -170,14 +170,11 @@ function renderSavedMemes() {
   const elSavedMemesSection = document.querySelector('.saved-memes-section')
 
   const strHTMLs = savedMemes.map((meme, idx) => {
-    const imgs = getImgs()
-    const memeImg = imgs.find((img) => img.id === meme.selectedImgId)
-    const imgUrl = memeImg ? memeImg.url : `img/1.jpg`
-
+    const imgUrl = meme.dataUrl
     return `
-            <div onclick="onEditMeme(${idx});">
-                <img src="${imgUrl}" alt="Saved Meme ${idx}" class="meme-img">
-            </div>`
+                <div onclick="onEditMeme(${idx});">
+                    <img src="${imgUrl}" alt="Saved Meme ${idx}" class="saved-meme">
+                </div>`
   })
 
   elSavedMemesSection.innerHTML = strHTMLs.join('')
@@ -186,7 +183,7 @@ function renderSavedMemes() {
 function onEditMeme(memeIdx) {
   const savedMemes = getSavedMemes()
   const memeToEdit = savedMemes[memeIdx]
-  setImg(memeToEdit.selectedImgId)
+  setMeme(memeToEdit)
   renderMeme()
   toggleDisplay('.saved-memes-section', false)
   toggleDisplay('.meme-editor-wrapper', true)
@@ -218,7 +215,7 @@ function drawText(line, idx) {
   const meme = getMeme()
   const currentLine = meme.selectedLineIdx
 
-  if (idx === currentLine) {
+  if (idx === currentLine && (isInsideText || gIsLineClicked)) {
     drawBoundingBox(startX, startY, rectWidth, rectHeight)
   }
 }
@@ -281,7 +278,7 @@ function defineBoundingBox(line, yPos, xPos, textWidth) {
 function drawBoundingBox(startX, startY, rectWidth, rectHeight) {
   const padding = 10
   gCtx.beginPath()
-  gCtx.strokeStyle = 'white'
+  gCtx.strokeStyle = '#ffffff'
   gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
   gCtx.stroke()
 }
@@ -292,6 +289,7 @@ function onCanvasClicked(ev) {
   const adjustedX = ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth)
   const adjustedY = ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight)
 
+  isInsideText = false
   for (let idx = meme.lines.length - 1; idx >= 0; idx--) {
     const line = meme.lines[idx]
     const textWidth = gCtx.measureText(line.txt).width
@@ -307,12 +305,15 @@ function onCanvasClicked(ev) {
       adjustedY >= startY - padding &&
       adjustedY <= startY + rectHeight + padding
     ) {
+      isInsideText = true
       setLinesProperties(idx, startX, startY, rectWidth, rectHeight)
       meme.selectedLineIdx = idx
-      renderMeme()
+      gIsLineClicked = true
       break
     }
   }
+  if (!isInsideText) gIsLineClicked = false
+  renderMeme()
 }
 
 function updateEditorForClickedLine() {
@@ -339,6 +340,7 @@ function onAddLine() {
 
 function onSwitchLine() {
   switchLine()
+  updateEditorForClickedLine()
   renderMeme()
 }
 
@@ -389,6 +391,7 @@ function onChangeSection(ev, sectionName) {
   toggleDisplay('.gallery', false)
   toggleDisplay('.meme-editor-wrapper', false)
   toggleDisplay('.saved-memes-section', false)
+  onResetEditor()
 
   switch (sectionName) {
     case 'gallery':
@@ -402,6 +405,23 @@ function onChangeSection(ev, sectionName) {
       renderSavedMemes()
       break
   }
+}
+
+function onResetEditor() {
+  resetEditorValues()
+  resetEditor()
+  renderMeme()
+}
+
+function resetEditorValues() {
+  document.querySelector('.meme-text').value = ''
+  document.getElementById('text-color').value = '#ffffff'
+  document.querySelector('.font-family').value = ''
+  document.querySelector('.size-selector').value = '30'
+  let sizeInput = document.querySelector('.size-selector')
+  sizeInput.value = '30'
+  sizeInput.setAttribute('value', '30')
+  setFontSize(25)
 }
 
 function onDownloadMeme() {
@@ -458,4 +478,50 @@ function isPointInRect(point, rect, space = 10) {
     point.y > rect.startY - space &&
     point.y < rect.startY + rect.rectHeight + space
   )
+}
+
+// Upload User Image //
+
+function onPickImage(ev) {
+  loadImageFromInput(ev, renderMeme)
+}
+
+function loadImageFromInput(ev, onImageReady) {
+  const reader = new FileReader()
+
+  reader.onload = function (event) {
+    const meme = getMeme()
+    meme.uploadedImgUrl = event.target.result
+    onImageReady()
+  }
+
+  reader.readAsDataURL(ev.target.files[0])
+}
+
+// Share On Facebook //
+
+function onShareFacebook() {
+  const imgDataUrl = gElCanvas.toDataURL('image/jpeg')
+  function onSuccess(uploadedImgUrl) {
+    const url = encodeURIComponent(uploadedImgUrl)
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&t=${url}`)
+  }
+  doUploadImg(imgDataUrl, onSuccess)
+}
+
+function doUploadImg(imgDataUrl, onSuccess) {
+  const formData = new FormData()
+  formData.append('img', imgDataUrl)
+  const XHR = new XMLHttpRequest()
+  XHR.onreadystatechange = () => {
+    if (XHR.readyState !== XMLHttpRequest.DONE) return
+    if (XHR.status !== 200) return console.error('Error uploading image')
+    const { responseText: url } = XHR
+    onSuccess(url)
+  }
+  XHR.onerror = (req, ev) => {
+    console.error('Error connecting to server with request:', req, '\nGot response data:', ev)
+  }
+  XHR.open('POST', '//ca-upload.com/here/upload.php')
+  XHR.send(formData)
 }

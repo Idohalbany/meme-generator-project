@@ -37,6 +37,7 @@
       placeholder="Filter images..." />
     <datalist id="image-tags"></datalist>
     <button onclick="onClearFilter()">Clear Filter</button>
+    <div class="keyword-container"></div>
 
     <!-- Main Content Wrapper -->
     <div class="main-content">
@@ -137,9 +138,9 @@
             <input
               type="file"
               class="pick-image-device"
-              onchange="onPickImage(this)"
+              onchange="onPickImage(event)"
               accept="image/*" />
-            <button onclick="onSaveMeme()" class="save-btn">Save</button>
+            <button class="save-btn">Save</button>
           </div>
         </div>
       </section>

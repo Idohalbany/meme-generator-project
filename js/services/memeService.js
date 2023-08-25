@@ -20,16 +20,17 @@ var gImgs = [
   { id: 17, url: `img/17.jpg`, keywords: ['politics', 'bad'] },
   { id: 18, url: `img/18.jpg`, keywords: ['movies', 'akward'] },
 ]
-var gKeywordSearchCountMap = { funny: 12, cat: 16, baby: 2 }
+var gKeywordSearchCountMap = createKeywordMap()
 
 var gMeme = {
   selectedImgId: 5,
+  uploadedImgUrl: null,
   selectedLineIdx: 0,
   lines: [
     {
       txt: 'New Line',
       size: 25,
-      color: 'white',
+      color: '#ffffff',
       strokeColor: 'black',
       font: 'Impact',
       align: 'center',
@@ -41,7 +42,7 @@ var gMeme = {
     {
       txt: 'New Line',
       size: 25,
-      color: 'white',
+      color: '#ffffff',
       strokeColor: 'black',
       font: 'Impact',
       align: 'center',
@@ -56,25 +57,48 @@ var gMeme = {
 const gRandomTexts = [
   'Why so serious?',
   'Is this a meme?',
-  'I can haz randomness',
+  'I love Viki',
   'Such wow!',
-  'Stay random, my friend',
+  'Stay random my friend',
   'Memes gonna meme',
   'Randomize me, captain!',
   'Just another meme day',
   'Meme magic!',
   'Roll the dice, get a meme',
+  'Halbany is king',
+  'Alfi is an idiot',
 ]
 
 var gSavedMeme
+const BASE_FONT_SIZE = 10
 
 function filterImagesByKeyword(keyword) {
   return gImgs.filter((img) => img.keywords.some((keyWord) => keyWord.includes(keyword)))
 }
 
+function getFontSizeForKeyword(keyword) {
+  return BASE_FONT_SIZE + gKeywordSearchCountMap[keyword]
+}
+
+function createKeywordMap() {
+  const keywordOccurrences = {}
+
+  gImgs.forEach((img) => {
+    img.keywords.forEach((keyword) => {
+      if (!keywordOccurrences[keyword]) {
+        keywordOccurrences[keyword] = 1
+      } else {
+        keywordOccurrences[keyword]++
+      }
+    })
+  })
+
+  return keywordOccurrences
+}
+
 function updateKeywordSearchCount(keyword) {
   if (!gKeywordSearchCountMap[keyword]) {
-    gKeywordSearchCountMap[keyword] = 1
+    gKeywordSearchCountMap[keyword] = gKeywordOccurrencesMap[keyword] || 1
   } else {
     gKeywordSearchCountMap[keyword]++
   }
@@ -153,7 +177,7 @@ function addLine() {
   gMeme.lines.push({
     txt: 'New Line',
     size: 25,
-    color: 'white',
+    color: '#ffffff',
     strokeColor: 'black',
     font: 'Impact',
     align: 'center',
@@ -180,8 +204,9 @@ function generateRandomMeme() {
 }
 
 function saveMeme() {
-  gSavedMeme = getSavedMemes()
   const savedMeme = JSON.parse(JSON.stringify(gMeme))
+  savedMeme.dataUrl = gElCanvas.toDataURL()
+  gSavedMeme = getSavedMemes()
   gSavedMeme.push(savedMeme)
   saveToStorage('memesDB', gSavedMeme)
 }
@@ -211,7 +236,7 @@ function addStickerLine(emoji) {
   const stickerLine = {
     txt: emoji,
     size: 40,
-    color: 'white',
+    color: '#ffffff',
     strokeColor: 'black',
     font: 'Impact',
     align: 'center',
@@ -222,4 +247,38 @@ function addStickerLine(emoji) {
   }
   meme.lines.push(stickerLine)
   meme.selectedLineIdx = meme.lines.length - 1
+}
+
+function resetEditor() {
+  gMeme = {
+    selectedImgId: 5,
+    uploadedImgUrl: null,
+    selectedLineIdx: 0,
+    lines: [
+      {
+        txt: 'New Line',
+        size: 25,
+        color: '#ffffff',
+        strokeColor: 'black',
+        font: 'Impact',
+        align: 'center',
+        pos: { x: 450, y: 90 },
+        width: 0,
+        height: 0,
+        isDrag: false,
+      },
+      {
+        txt: 'New Line',
+        size: 25,
+        color: '#ffffff',
+        strokeColor: 'black',
+        font: 'Impact',
+        align: 'center',
+        pos: { x: 450, y: 150 },
+        width: 0,
+        height: 0,
+        isDrag: false,
+      },
+    ],
+  }
 }

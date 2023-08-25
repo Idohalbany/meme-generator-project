@@ -1,6 +1,7 @@
 'use strict'
 
 populateDatalistWithTags()
+renderKeywords()
 
 function renderGallery(imgs = getImgs()) {
   let strHtmls = imgs.map(
@@ -15,6 +16,8 @@ function renderGallery(imgs = getImgs()) {
 }
 
 function onImgSelect(imgId) {
+  const meme = getMeme()
+  meme.uploadedImgUrl = null
   setImg(imgId)
   renderMeme()
   toggleDisplay('.gallery', false)
@@ -32,6 +35,23 @@ function populateDatalistWithTags() {
 
   const datalist = document.getElementById('image-tags')
   datalist.innerHTML = uniqueKeywords.map((keyword) => `<option value="${keyword}">`).join('')
+}
+
+function renderKeywords() {
+  const elKeywordContainer = document.querySelector('.keyword-container')
+  const strHTMLs = Object.keys(gKeywordSearchCountMap).map((keyword) => {
+    const fontSize = getFontSizeForKeyword(keyword)
+    return `<span style="font-size:${fontSize}px; color: #ffffff; margin-left: 20px; cursor: pointer"
+     onclick="onKeywordClick('${keyword}')">${keyword}</span>`
+  })
+  elKeywordContainer.innerHTML = strHTMLs.join('')
+}
+
+function onKeywordClick(keyword) {
+  updateKeywordSearchCount(keyword)
+  renderKeywords()
+  const filteredImgs = filterImagesByKeyword(keyword)
+  renderGallery(filteredImgs)
 }
 
 function onFilterGallery({ filterBy }) {
