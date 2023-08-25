@@ -33,9 +33,10 @@ var gMeme = {
       strokeColor: 'black',
       font: 'Impact',
       align: 'center',
-      pos: { x: 0, y: 90 },
+      pos: { x: 450, y: 90 },
       width: 0,
       height: 0,
+      isDrag: false,
     },
     {
       txt: 'New Line',
@@ -44,9 +45,10 @@ var gMeme = {
       strokeColor: 'black',
       font: 'Impact',
       align: 'center',
-      pos: { x: 0, y: 150 },
+      pos: { x: 450, y: 150 },
       width: 0,
       height: 0,
+      isDrag: false,
     },
   ],
 }
@@ -65,6 +67,18 @@ const gRandomTexts = [
 ]
 
 var gSavedMeme
+
+function filterImagesByKeyword(keyword) {
+  return gImgs.filter((img) => img.keywords.some((keyWord) => keyWord.includes(keyword)))
+}
+
+function updateKeywordSearchCount(keyword) {
+  if (!gKeywordSearchCountMap[keyword]) {
+    gKeywordSearchCountMap[keyword] = 1
+  } else {
+    gKeywordSearchCountMap[keyword]++
+  }
+}
 
 function setLinesProperties(lineIdx, x, y, width, height) {
   const line = gMeme.lines[lineIdx]
@@ -143,9 +157,10 @@ function addLine() {
     strokeColor: 'black',
     font: 'Impact',
     align: 'center',
-    pos: { x: 0, y: 120 },
+    pos: { x: 400, y: 120 },
     width: 0,
     height: 0,
+    isDrag: false,
   })
   gMeme.selectedLineIdx = gMeme.lines.length - 1
 }
@@ -179,6 +194,7 @@ function deleteLine() {
   if (gMeme.lines.length === 0) return
 
   gMeme.lines.splice(gMeme.selectedLineIdx, 1)
+  console.log(gMeme.selectedLineIdx)
 
   if (gMeme.selectedLineIdx >= gMeme.lines.length) {
     gMeme.selectedLineIdx = gMeme.lines.length - 1
@@ -188,4 +204,22 @@ function deleteLine() {
 function switchLine() {
   gMeme.selectedLineIdx++
   if (gMeme.selectedLineIdx >= gMeme.lines.length) gMeme.selectedLineIdx = 0
+}
+
+function addStickerLine(emoji) {
+  const meme = getMeme()
+  const stickerLine = {
+    txt: emoji,
+    size: 40,
+    color: 'white',
+    strokeColor: 'black',
+    font: 'Impact',
+    align: 'center',
+    pos: { x: 400, y: 120 },
+    width: 0,
+    height: 0,
+    isDrag: false,
+  }
+  meme.lines.push(stickerLine)
+  meme.selectedLineIdx = meme.lines.length - 1
 }

@@ -30,6 +30,13 @@
       <i onclick="toggleMenu('open')" class="mobile-menu fa-solid fa-bars"></i>
       <i onclick="toggleMenu('close')" class="close-menu fa-solid fa-x"></i>
     </header>
+    <input
+      list="image-tags"
+      class="filter-input"
+      oninput="onFilterGallery({filterBy: this.value})"
+      placeholder="Filter images..." />
+    <datalist id="image-tags"></datalist>
+    <button onclick="onClearFilter()">Clear Filter</button>
 
     <!-- Main Content Wrapper -->
     <div class="main-content">
@@ -89,16 +96,16 @@
 
           <!-- Line Controls -->
           <div class="line-controls">
-            <button onclick="onAddLine()" class="add-line">Add Line</button>
-            <button onclick="onSwitchLine()" class="add-line">Switch Line</button>
-            <button onclick="ondeleteLine()" class="delete-line">Delete Line</button>
+            <button class="add-line">Add Line</button>
+            <button class="add-line">Switch Line</button>
+            <button class="delete-line">Delete Line</button>
           </div>
 
           <!-- Alignment Controls -->
           <div class="alignment-controls">
-            <button onclick="onChangeTextAlignment('left')" class="align-btn">Left</button>
-            <button onclick="onChangeTextAlignment('center')" class="align-btn">Center</button>
-            <button onclick="onChangeTextAlignment('right')" class="align-btn">Right</button>
+            <button class="align-btn">Left</button>
+            <button class="align-btn">Center</button>
+            <button class="align-btn">Right</button>
           </div>
 
           <!-- Position Controls -->
@@ -111,9 +118,15 @@
           <div class="new-features">
             <button onclick="onRotateLine()" class="rotate-line">Rotate Line</button>
             <button onclick="onGenerateRandomMeme()" class="btn-flexible">I'm Flexible</button>
-            <button onclick="onAddSticker('😜')" class="sticker-selector">😜</button>
-            <button onclick="onAddSticker('😍')" class="sticker-selector">😍</button>
             <button onclick="onShareFacebook()" class="share-facebook">Share on Facebook</button>
+          </div>
+
+          <div class="emoji-dropdown">
+            <button>🙂 Emoji Picker</button>
+            <div class="emoji-menu" id="emojiMenu">
+              <span class="emoji-option">😜</span>
+              <span class="emoji-option">😍</span>
+            </div>
           </div>
 
           <!-- Download Control -->
