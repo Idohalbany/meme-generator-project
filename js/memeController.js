@@ -5,8 +5,9 @@
 let gElCanvas
 let gCtx
 let gStartPos = null
-var gIsLineClicked = false
+let gIsLineClicked = false
 let isInsideText
+let resizeTimeout
 
 // oninit //
 function onInit() {
@@ -25,8 +26,11 @@ function onInit() {
 
 function addListeners() {
   window.addEventListener('resize', () => {
-    resizeCanvas()
-    renderMeme()
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      resizeCanvas()
+      renderMeme()
+    }, 100)
   })
 
   // Text Size Controls
@@ -83,8 +87,15 @@ function addListeners() {
 
 function resizeCanvas() {
   const canvasContainer = document.querySelector('.canvas-container')
+  const aspectRatio = gElCanvas.width / gElCanvas.height
+
   gElCanvas.width = canvasContainer.clientWidth
-  gElCanvas.height = canvasContainer.clientHeight
+  gElCanvas.height = canvasContainer.clientWidth / aspectRatio
+
+  if (gElCanvas.height > canvasContainer.clientHeight) {
+    gElCanvas.height = canvasContainer.clientHeight
+    gElCanvas.width = canvasContainer.clientHeight * aspectRatio
+  }
 }
 
 function renderMeme() {
