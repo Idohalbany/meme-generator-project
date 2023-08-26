@@ -149,11 +149,11 @@ function onMouseDown(ev) {
     )
     updateEditorForClickedLine()
 
-    if (isPointInRect(clickPos, boundingBox, 15)) {
+    if (isPointInRect(clickPos, boundingBox, 10)) {
       meme.selectedLineIdx = i
       line.isDrag = true
       gStartPos = clickPos
-      break
+      // break
     }
   }
 }
