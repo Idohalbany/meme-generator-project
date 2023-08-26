@@ -1,0 +1,85 @@
+/* !! reset */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  background-color: #181818;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* mobile menu */
+
+.mobile-menu,
+.close-menu {
+  display: none;
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+}
+
+.mobile-menu:hover,
+.close-menu:hover {
+  color: #0088a9;
+}
+
+/* nav design */
+
+li,
+a {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #ffffff;
+  text-decoration: none;
+  margin-top: 5px;
+}
+
+.active {
+  color: #0088a9;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 10%;
+  margin-top: 15px;
+}
+
+header h1 a {
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.links {
+  list-style: none;
+}
+
+.links li {
+  display: inline-block;
+  padding: 0px 20px;
+}
+
+.links li a {
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+}
+
+.links li a:hover {
+  color: #0088a9;
+}
+
+/* site container */
+
+.main-content {
+  max-width: 90vw;
+  margin: auto;
+}

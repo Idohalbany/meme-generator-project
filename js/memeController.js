@@ -1,12 +1,18 @@
 'use strict'
 
+// global //
+
 let gElCanvas
 let gCtx
 let gStartPos = null
 var gIsLineClicked = false
 let isInsideText
 
+// oninit //
 function onInit() {
+  toggleDisplay('.meme-editor-wrapper', false)
+  toggleDisplay('.saved-memes-section', false)
+  toggleDisplay('.gallery-section', true)
   gElCanvas = document.getElementById('meme-canvas')
   gCtx = gElCanvas.getContext('2d')
   gElCanvas.addEventListener('click', onCanvasClicked)
@@ -15,6 +21,8 @@ function onInit() {
   renderGallery()
 }
 
+// event listeners //
+
 function addListeners() {
   window.addEventListener('resize', () => {
     resizeCanvas()
@@ -22,16 +30,12 @@ function addListeners() {
   })
 
   // Text Size Controls
-  document
-    .querySelector('.change-size:nth-child(1)')
-    .addEventListener('click', () => onChangeFontSize(2))
-  document
-    .querySelector('.change-size:nth-child(2)')
-    .addEventListener('click', () => onChangeFontSize(-2))
+  document.querySelector('.change-size1').addEventListener('click', () => onChangeFontSize(2))
+  document.querySelector('.change-size2').addEventListener('click', () => onChangeFontSize(-2))
 
   // Line Controls
-  document.querySelector('.add-line:nth-child(1)').addEventListener('click', onAddLine)
-  document.querySelector('.add-line:nth-child(2)').addEventListener('click', onSwitchLine)
+  document.querySelector('.add-line').addEventListener('click', onAddLine)
+  document.querySelector('.switch-line').addEventListener('click', onSwitchLine)
   document.querySelector('.delete-line').addEventListener('click', ondeleteLine)
 
   // Alignment Controls
@@ -46,15 +50,11 @@ function addListeners() {
     .addEventListener('click', () => onChangeTextAlignment('left'))
 
   // Position Controls
-  document
-    .querySelector('.move-line:nth-child(1)')
-    .addEventListener('click', () => onMoveLine('up'))
-  document
-    .querySelector('.move-line:nth-child(2)')
-    .addEventListener('click', () => onMoveLine('down'))
+  document.querySelector('.move-line-up').addEventListener('click', () => onMoveLine('up'))
+  document.querySelector('.move-line-down').addEventListener('click', () => onMoveLine('down'))
 
   // New Features Controls
-  // document.querySelector('.rotate-line').addEventListener('click', onRotateLine)
+  document.querySelector('.rotate-line').addEventListener('click', onRotateLine)
   document.querySelector('.btn-flexible').addEventListener('click', onGenerateRandomMeme)
   document.querySelectorAll('.sticker-selector').forEach((sticker) => {
     sticker.addEventListener('click', (e) => onAddSticker(e.target.innerText))
@@ -74,7 +74,12 @@ function addListeners() {
   gElCanvas.addEventListener('mousedown', onMouseDown)
   gElCanvas.addEventListener('mousemove', onMouseMove)
   gElCanvas.addEventListener('mouseup', onMouseUp)
+  gElCanvas.addEventListener('touchstart', onMouseDown)
+  gElCanvas.addEventListener('touchmove', onMouseMove)
+  gElCanvas.addEventListener('touchend', onMouseUp)
 }
+
+// resize canvas //
 
 function resizeCanvas() {
   const canvasContainer = document.querySelector('.canvas-container')
@@ -99,10 +104,22 @@ function renderMeme() {
   imgToRender.src = imgUrl
 }
 
+// mouse and touch events //
+
 function onMouseDown(ev) {
-  const clickPos = {
-    x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
-    y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
+  let clickPos
+  if (ev.type === 'touchstart') {
+    ev.preventDefault()
+    const touch = ev.changedTouches[0]
+    clickPos = {
+      x: touch.clientX - ev.target.offsetLeft,
+      y: touch.clientY - ev.target.offsetTop,
+    }
+  } else {
+    clickPos = {
+      x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
+      y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
+    }
   }
 
   const meme = getMeme()
@@ -116,6 +133,7 @@ function onMouseDown(ev) {
       gCtx.measureText(line.txt).width
     )
     updateEditorForClickedLine()
+
     if (isPointInRect(clickPos, boundingBox, 15)) {
       meme.selectedLineIdx = i
       line.isDrag = true
@@ -126,13 +144,23 @@ function onMouseDown(ev) {
 }
 
 function onMouseMove(ev) {
+  let currPos
+  if (ev.type === 'touchmove') {
+    ev.preventDefault()
+    const touch = ev.changedTouches[0]
+    currPos = {
+      x: touch.clientX - ev.target.offsetLeft,
+      y: touch.clientY - ev.target.offsetTop,
+    }
+  } else {
+    currPos = {
+      x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
+      y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
+    }
+  }
+
   const meme = getMeme()
   if (meme.selectedLineIdx === -1 || !meme.lines[meme.selectedLineIdx].isDrag || !gStartPos) return
-
-  const currPos = {
-    x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
-    y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
-  }
 
   const deltaX = currPos.x - gStartPos.x
   const deltaY = currPos.y - gStartPos.y
@@ -146,7 +174,9 @@ function onMouseMove(ev) {
   renderMeme()
 }
 
-function onMouseUp() {
+function onMouseUp(ev) {
+  if (ev.type === 'touchend') ev.preventDefault()
+
   const meme = getMeme()
   if (meme.selectedLineIdx === -1) return
 
@@ -162,8 +192,10 @@ function onGenerateRandomMeme() {
 
 function onSaveMeme() {
   saveMeme()
-  // renderSavedMemes()
+  showNotification()
 }
+
+// saved memes //
 
 function renderSavedMemes() {
   const savedMemes = getSavedMemes()
@@ -172,9 +204,13 @@ function renderSavedMemes() {
   const strHTMLs = savedMemes.map((meme, idx) => {
     const imgUrl = meme.dataUrl
     return `
-                <div onclick="onEditMeme(${idx});">
-                    <img src="${imgUrl}" alt="Saved Meme ${idx}" class="saved-meme">
-                </div>`
+      <div class="meme-container" data-meme-id="${idx}">
+          <img src="${imgUrl}" alt="Saved Meme ${idx}" class="saved-meme">
+          <div class="meme-actions">
+              <button class="edit-saved-meme" onclick="onEditMeme(${idx});"><i class="fa-solid fa-screwdriver-wrench"></i></button>
+              <button class="remove-saved-meme" onclick="onDeleteMeme(${idx});"><i class="fa-solid fa-trash"></i></button>
+          </div>
+      </div>`
   })
 
   elSavedMemesSection.innerHTML = strHTMLs.join('')
@@ -188,6 +224,8 @@ function onEditMeme(memeIdx) {
   toggleDisplay('.saved-memes-section', false)
   toggleDisplay('.meme-editor-wrapper', true)
 }
+
+// draw lines //
 
 function drawText(line, idx) {
   styleText(line)
@@ -228,6 +266,8 @@ function styleText(line) {
   gCtx.textAlign = line.align
 }
 
+// calculate positions //
+
 function calculateTextPosition(line, textWidth) {
   const padding = 10
   switch (line.align) {
@@ -241,6 +281,8 @@ function calculateTextPosition(line, textWidth) {
   }
 }
 
+// move line //
+
 function onMoveLine(direction) {
   const memes = getMeme()
   if (memes.selectedLineIdx === -1) return
@@ -248,6 +290,8 @@ function onMoveLine(direction) {
   moveLine(diff, 'y')
   renderMeme()
 }
+
+// draw frame //
 
 function defineBoundingBox(line, yPos, xPos, textWidth) {
   const startY = yPos - line.size
@@ -282,6 +326,8 @@ function drawBoundingBox(startX, startY, rectWidth, rectHeight) {
   gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
   gCtx.stroke()
 }
+
+// check clicks on canvas //
 
 function onCanvasClicked(ev) {
   const meme = getMeme()
@@ -327,16 +373,31 @@ function updateEditorForClickedLine() {
   elColorInput.value = selectedLine.color
 }
 
+// delete meme //
+
+function onDeleteMeme(idx) {
+  const savedMemes = getSavedMemes()
+  savedMemes.splice(idx, 1)
+  saveToStorage('memesDB', savedMemes)
+  renderSavedMemes()
+}
+
+// delete line //
+
 function ondeleteLine() {
   deleteLine()
   renderMeme()
   updateEditorForClickedLine()
 }
 
+// add lines //
+
 function onAddLine() {
   addLine()
   renderMeme()
 }
+
+// switch lines //
 
 function onSwitchLine() {
   switchLine()
@@ -344,10 +405,14 @@ function onSwitchLine() {
   renderMeme()
 }
 
+// set line text //
+
 function onTextChange(txt) {
   setLineTxt(txt)
   renderMeme()
 }
+
+// change color //
 
 function onColorChange(color) {
   const selectedLineIdx = getSelectedLineIdx()
@@ -355,16 +420,22 @@ function onColorChange(color) {
   renderMeme()
 }
 
+// set font size //
+
 function onChangeFontSize(num) {
   const selectedLineIdx = getSelectedLineIdx()
   updateFontSize(selectedLineIdx, num)
   renderMeme()
 }
 
+// set font family //
+
 function onChangeFontFamily(font) {
   changeFontFamily(font)
   renderMeme()
 }
+
+// set size with selector //
 
 function onSetSizeSelector(ev, size) {
   ev.target.setAttribute('value', size)
@@ -373,79 +444,20 @@ function onSetSizeSelector(ev, size) {
   renderMeme()
 }
 
+// text alignment //
+
 function onChangeTextAlignment(alignment) {
   changeTextAlignment(alignment)
   renderMeme()
 }
 
-function toggleDisplay(elSelector, isShown) {
-  const el = document.querySelector(elSelector)
-  if (el) {
-    if (isShown) el.style.display = 'grid'
-    else el.style.display = 'none'
-  }
+// rotate lines //
+
+function onRotateLine() {
+  alert('Sike! didnt have time')
 }
 
-function onChangeSection(ev, sectionName) {
-  ev.preventDefault()
-  toggleDisplay('.gallery', false)
-  toggleDisplay('.meme-editor-wrapper', false)
-  toggleDisplay('.saved-memes-section', false)
-  onResetEditor()
-
-  switch (sectionName) {
-    case 'gallery':
-      toggleDisplay('.gallery', true)
-      break
-    case 'createMemes':
-      toggleDisplay('.meme-editor-wrapper', true)
-      break
-    case 'savedMemes':
-      toggleDisplay('.saved-memes-section', true)
-      renderSavedMemes()
-      break
-  }
-}
-
-function onResetEditor() {
-  resetEditorValues()
-  resetEditor()
-  renderMeme()
-}
-
-function resetEditorValues() {
-  document.querySelector('.meme-text').value = ''
-  document.getElementById('text-color').value = '#ffffff'
-  document.querySelector('.font-family').value = ''
-  document.querySelector('.size-selector').value = '30'
-  let sizeInput = document.querySelector('.size-selector')
-  sizeInput.value = '30'
-  sizeInput.setAttribute('value', '30')
-  setFontSize(25)
-}
-
-function onDownloadMeme() {
-  const downloadLink = document.getElementById('download-link')
-  downloadLink.href = gElCanvas.toDataURL('image/jpeg')
-  downloadLink.download = 'my-meme.jpg'
-  downloadLink.click()
-}
-
-function toggleMenu(state) {
-  const elMobileMenu = document.querySelector('.mobile-menu')
-  const elCloseMenu = document.querySelector('.close-menu')
-  const elNavBar = document.querySelector('.nav')
-
-  if (state === 'open') {
-    elMobileMenu.style.display = 'none'
-    elCloseMenu.style.display = 'block'
-    elNavBar.style.display = 'flex'
-  } else {
-    elMobileMenu.style.display = ''
-    elCloseMenu.style.display = 'none'
-    elNavBar.style.display = ''
-  }
-}
+// add stickers //
 
 function onAddSticker(emoji) {
   addStickerLine(emoji)
@@ -470,6 +482,91 @@ document.addEventListener('click', function (event) {
     emojiMenu.style.display = 'none'
   }
 })
+
+// display sections //
+
+function toggleDisplay(elSelector, isShown) {
+  const el = document.querySelector(elSelector)
+  if (el) {
+    if (isShown) el.style.display = 'grid'
+    else el.style.display = 'none'
+  }
+}
+
+function onChangeSection(ev, sectionName) {
+  ev.preventDefault()
+  toggleDisplay('.gallery-section', false)
+  toggleDisplay('.meme-editor-wrapper', false)
+  toggleDisplay('.saved-memes-section', false)
+  onResetEditor()
+  toggleMenu('close')
+
+  document.querySelectorAll('.links a').forEach((link) => link.classList.remove('active'))
+
+  switch (sectionName) {
+    case 'gallery':
+      toggleDisplay('.gallery-section', true)
+      ev.target.classList.add('active')
+      break
+    case 'createMemes':
+      toggleDisplay('.meme-editor-wrapper', true)
+      ev.target.classList.add('active')
+      break
+    case 'savedMemes':
+      toggleDisplay('.saved-memes-section', true)
+      renderSavedMemes()
+      ev.target.classList.add('active')
+      break
+  }
+}
+
+// reset editor //
+
+function onResetEditor() {
+  resetEditorValues()
+  resetEditor()
+  renderMeme()
+}
+
+function resetEditorValues() {
+  document.querySelector('.meme-text').value = ''
+  document.getElementById('text-color').value = '#ffffff'
+  document.querySelector('.font-family').value = ''
+  document.querySelector('.size-selector').value = '30'
+  let sizeInput = document.querySelector('.size-selector')
+  sizeInput.value = '30'
+  sizeInput.setAttribute('value', '30')
+  setFontSize(25)
+}
+
+// download meme //
+
+function onDownloadMeme() {
+  const downloadLink = document.getElementById('download-link')
+  downloadLink.href = gElCanvas.toDataURL('image/jpeg')
+  downloadLink.download = 'my-meme.jpg'
+  downloadLink.click()
+}
+
+// toggle menus //
+
+function toggleMenu(state) {
+  const elMobileMenu = document.querySelector('.mobile-menu')
+  const elCloseMenu = document.querySelector('.close-menu')
+  const elNavBar = document.querySelector('.nav')
+
+  if (state === 'open') {
+    elMobileMenu.style.display = 'none'
+    elCloseMenu.style.display = 'block'
+    elNavBar.style.display = 'flex'
+  } else {
+    elMobileMenu.style.display = ''
+    elCloseMenu.style.display = 'none'
+    elNavBar.style.display = ''
+  }
+}
+
+// check if clicked on line //
 
 function isPointInRect(point, rect, space = 10) {
   return (
@@ -524,4 +621,19 @@ function doUploadImg(imgDataUrl, onSuccess) {
   }
   XHR.open('POST', '//ca-upload.com/here/upload.php')
   XHR.send(formData)
+}
+
+// show save notfication //
+
+function showNotification() {
+  const elNotification = document.querySelector('.notification')
+  elNotification.style.display = 'block'
+  elNotification.style.opacity = '1'
+
+  setTimeout(() => {
+    elNotification.style.opacity = '0'
+    setTimeout(() => {
+      elNotification.style.display = 'none'
+    }, 300)
+  }, 2000)
 }

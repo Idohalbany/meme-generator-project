@@ -7,46 +7,81 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/mq.css" />
   </head>
   <body onload="onInit()">
     <header>
       <!-- Navigation -->
-
       <h1 class="logo"><a href="index.html">MEME GENERATOR</a></h1>
       <nav class="nav">
         <ul class="links">
           <li>
-            <a onclick="onChangeSection(event, 'gallery')">Templates Gallery</a>
+            <a class="mobile-nav-link" onclick="onChangeSection(event, 'gallery')"
+              >Templates Gallery</a
+            >
           </li>
           <li>
-            <a onclick="onChangeSection(event, 'createMemes')">Create Meme</a>
+            <a class="mobile-nav-link" onclick="onChangeSection(event, 'createMemes')"
+              >Create Meme</a
+            >
           </li>
           <li>
-            <a onclick="onChangeSection(event ,'savedMemes')">Saved Memes</a>
+            <a class="mobile-nav-link" onclick="onChangeSection(event ,'savedMemes')"
+              >Saved Memes</a
+            >
           </li>
         </ul>
       </nav>
       <i onclick="toggleMenu('open')" class="mobile-menu fa-solid fa-bars"></i>
       <i onclick="toggleMenu('close')" class="close-menu fa-solid fa-x"></i>
     </header>
-    <input
-      list="image-tags"
-      class="filter-input"
-      oninput="onFilterGallery({filterBy: this.value})"
-      placeholder="Filter images..." />
-    <datalist id="image-tags"></datalist>
-    <button onclick="onClearFilter()">Clear Filter</button>
-    <div class="keyword-container"></div>
 
     <!-- Main Content Wrapper -->
     <div class="main-content">
-      <section class="gallery">
-        <!-- Gallery content -->
+      <section class="gallery-section">
+        <div class="filter-wrapper">
+          <div>
+            <div class="search-wrapper">
+              <input
+                list="image-tags"
+                class="filter-input"
+                oninput="onFilterGallery({filterBy: this.value})"
+                placeholder="Filter images..." />
+              <i class="fas fa-search search-icon"></i>
+            </div>
+            <datalist id="image-tags"></datalist>
+            <button class="clear-filter-btn" onclick="onClearFilter()">
+              <i class="fa-solid fa-x"></i>
+            </button>
+          </div>
+          <div class="keyword-container"></div>
+        </div>
+        <div class="gallery">
+          <!-- Rendering Gallery -->
+        </div>
       </section>
 
       <!-- Meme Editor and Canvas Section -->
       <section class="meme-editor-wrapper">
+        <div class="about-card">
+          <p>
+            Discover the Meme Generator, a tool that brings creativity to your fingertips. Craft,
+            design, and share hilarious memes tailored to your unique sense of humor.
+          </p>
+          <p>
+            Adjacent to the canvas, discover a plethora of features. Add or remove text lines with
+            ease, and save your creation swiftly. Navigate your text up or down, rotate lines for a
+            twist, and make alignment. Enhance your meme by adding emojis, and for precision, drag
+            and drop lines directly. Once satisfied, share your meme on Facebook or download to
+            treasure forever.
+          </p>
+          <p>
+            Ido Halbany, residing in Azor, and created the generator as part of Coding Academy
+            bootcamp's Sprint 2.
+          </p>
+        </div>
         <!-- Canvas Container -->
         <div class="canvas-wrapper">
           <div class="canvas-container">
@@ -54,20 +89,35 @@
           </div>
         </div>
 
-        <!-- Editor Tools on the Right -->
         <div class="editor-tools">
-          <!-- Text Controls -->
-          <div class="text-controls">
+          <!-- Upload Control -->
+          <div class="upload-field">
+            <button>
+              <input
+                type="file"
+                class="pick-image-device"
+                id="fileInput"
+                onchange="onPickImage(event)"
+                accept="image/*"
+                style="display: none" />
+              <label for="fileInput" class="custom-file-upload"
+                ><i class="icon-upload fa-solid fa-upload"></i> Upload</label
+              >
+            </button>
+          </div>
+
+          <!-- Text Field control -->
+          <div class="text-field">
             <input
               type="text"
               class="meme-text"
               placeholder="Enter your meme text"
               oninput="onTextChange(this.value)" />
-            <input
-              type="color"
-              id="text-color"
-              placeholder="Choose text color"
-              onchange="onColorChange(this.value)" />
+            <button class="btn-flexible">I'm Flexible</button>
+          </div>
+
+          <!-- Text Controls -->
+          <div class="text-controls">
             <select
               onchange="onChangeFontFamily(this.value)"
               name="font-family"
@@ -80,12 +130,17 @@
               <option value="Georgia">Georgia</option>
               <option value="Comic Sans MS">Comic Sans MS</option>
             </select>
+            <input
+              type="color"
+              id="text-color"
+              placeholder="Choose text color"
+              onchange="onColorChange(this.value)" />
           </div>
 
           <!-- Size Controls -->
           <div class="size-controls">
-            <button onclick="onChangeFontSize(2)" class="change-size">Increase Font</button>
-            <button onclick="onChangeFontSize(-2)" class="change-size">Decrease Font</button>
+            <button class="change-size1">A <i class="fa-light fa-plus"></i></button>
+
             <input
               oninput="onSetSizeSelector(event, this.value)"
               type="range"
@@ -93,54 +148,61 @@
               max="100"
               value="30"
               class="size-selector" />
+            <button class="change-size2">A -</button>
           </div>
 
           <!-- Line Controls -->
           <div class="line-controls">
-            <button class="add-line">Add Line</button>
-            <button class="add-line">Switch Line</button>
-            <button class="delete-line">Delete Line</button>
+            <button class="add-line"><i class="fa-regular fa-square-plus"></i></button>
+            <div class="emoji-dropdown">
+              <button><i class="fa-regular fa-face-dizzy"></i> Emoji Picker</button>
+              <div class="emoji-menu" id="emojiMenu">
+                <span class="emoji-option">😜</span>
+                <span class="emoji-option">😍</span>
+                <span class="emoji-option">😎</span>
+                <span class="emoji-option">❤️</span>
+                <span class="emoji-option">⭐️</span>
+                <span class="emoji-option">🤮</span>
+                <span class="emoji-option">🤣</span>
+                <span class="emoji-option">😵</span>
+                <span class="emoji-option">💀</span>
+                <span class="emoji-option">🤡</span>
+                <span class="emoji-option">💩</span>
+                <span class="emoji-option">👽</span>
+                <span class="emoji-option">🤯</span>
+                <span class="emoji-option">💋</span>
+                <span class="emoji-option">🇮🇱</span>
+              </div>
+            </div>
+            <button class="delete-line"><i class="fa-solid fa-trash-can"></i></button>
           </div>
 
           <!-- Alignment Controls -->
           <div class="alignment-controls">
-            <button class="align-btn">Left</button>
-            <button class="align-btn">Center</button>
-            <button class="align-btn">Right</button>
+            <button class="align-btn left"><i class="fa-solid fa-align-left"></i></button>
+            <button class="align-btn center"><i class="fa-solid fa-align-center"></i></button>
+            <button class="align-btn right"><i class="fa-solid fa-align-right"></i></button>
+            <button class="rotate-line"><i class="fa-solid fa-rotate"></i></button>
           </div>
 
           <!-- Position Controls -->
           <div class="position-controls">
-            <button onclick="onMoveLine('up')" class="move-line">Move Up</button>
-            <button onclick="onMoveLine('down')" class="move-line">Move Down</button>
+            <button class="move-line-up"><i class="fa-solid fa-arrows-up-to-line"></i></button>
+            <button class="switch-line">
+              <i class="fa-solid fa-arrow-down-up-across-line"></i>
+            </button>
+            <button class="move-line-down"><i class="fa-solid fa-arrows-down-to-line"></i></button>
           </div>
 
-          <!-- New Features Controls -->
+          <!-- Features Controls -->
           <div class="new-features">
-            <button onclick="onRotateLine()" class="rotate-line">Rotate Line</button>
-            <button onclick="onGenerateRandomMeme()" class="btn-flexible">I'm Flexible</button>
-            <button onclick="onShareFacebook()" class="share-facebook">Share on Facebook</button>
-          </div>
-
-          <div class="emoji-dropdown">
-            <button>🙂 Emoji Picker</button>
-            <div class="emoji-menu" id="emojiMenu">
-              <span class="emoji-option">😜</span>
-              <span class="emoji-option">😍</span>
-            </div>
-          </div>
-
-          <!-- Download Control -->
-          <div class="download-control">
-            <a href="#" id="download-link" class="btn-download" onclick="onDownloadMeme()"
-              >Download Meme</a
-            >
-            <input
-              type="file"
-              class="pick-image-device"
-              onchange="onPickImage(event)"
-              accept="image/*" />
-            <button class="save-btn">Save</button>
+            <button class="share-facebook"><i class="fa-brands fa-facebook-f"></i></button>
+            <button>
+              <a href="#" id="download-link" class="btn-download"
+                ><i class="fa-solid fa-download"></i
+              ></a>
+            </button>
+            <button class="save-btn"><i class="fa-regular fa-floppy-disk"></i></button>
           </div>
         </div>
       </section>
@@ -149,6 +211,16 @@
         <!-- saved memes rendering -->
       </section>
     </div>
+
+    <!-- Footer section -->
+    <footer>
+      <div class="footer-container">
+        CREATED BY IDO HALBANY ; ALL RIGHTS RESERVED &copy; - 2023 CODING ACADEMY SPRINT 2.
+      </div>
+    </footer>
+    <!-- Notification for saving -->
+    <div class="notification">Meme saved!</div>
+
     <script src="js/services/memeservice.storage.js"></script>
     <script src="js/services/memeService.js"></script>
     <script src="js/galleryController.js"></script>

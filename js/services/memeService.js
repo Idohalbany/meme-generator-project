@@ -1,5 +1,8 @@
 'use strict'
 
+var gSavedMeme
+const BASE_FONT_SIZE = 14
+
 var gImgs = [
   { id: 1, url: `img/1.jpg`, keywords: ['politics', 'akward'] },
   { id: 2, url: `img/2.jpg`, keywords: ['animal', 'cute'] },
@@ -69,9 +72,6 @@ const gRandomTexts = [
   'Alfi is an idiot',
 ]
 
-var gSavedMeme
-const BASE_FONT_SIZE = 10
-
 function filterImagesByKeyword(keyword) {
   return gImgs.filter((img) => img.keywords.some((keyWord) => keyWord.includes(keyword)))
 }
@@ -98,7 +98,7 @@ function createKeywordMap() {
 
 function updateKeywordSearchCount(keyword) {
   if (!gKeywordSearchCountMap[keyword]) {
-    gKeywordSearchCountMap[keyword] = gKeywordOccurrencesMap[keyword] || 1
+    gKeywordSearchCountMap[keyword] = gKeywordSearchCountMap[keyword] || 1
   } else {
     gKeywordSearchCountMap[keyword]++
   }
@@ -181,7 +181,7 @@ function addLine() {
     strokeColor: 'black',
     font: 'Impact',
     align: 'center',
-    pos: { x: 400, y: 120 },
+    pos: { x: 450, y: 120 },
     width: 0,
     height: 0,
     isDrag: false,
