@@ -33,6 +33,10 @@ function addListeners() {
     }, 100)
   })
 
+  window.addEventListener('scroll', () => {
+    renderMeme()
+  })
+
   // Text Size Controls
   document.querySelector('.change-size1').addEventListener('click', () => onChangeFontSize(2))
   document.querySelector('.change-size2').addEventListener('click', () => onChangeFontSize(-2))

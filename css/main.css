@@ -97,7 +97,6 @@
 .canvas-wrapper {
   width: 55vh;
   max-width: 100vh;
-  overflow: hidden;
 }
 
 .canvas-container {
