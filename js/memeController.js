@@ -10,13 +10,13 @@ let isInsideText
 let resizeTimeout
 
 // oninit //
+
 function onInit() {
   toggleDisplay('.meme-editor-wrapper', false)
   toggleDisplay('.saved-memes-section', false)
   toggleDisplay('.gallery-section', true)
   gElCanvas = document.getElementById('meme-canvas')
   gCtx = gElCanvas.getContext('2d')
-  gElCanvas.addEventListener('click', onCanvasClicked)
   addListeners()
   renderMeme()
   renderGallery()
@@ -36,6 +36,8 @@ function addListeners() {
   window.addEventListener('scroll', () => {
     renderMeme()
   })
+
+  gElCanvas.addEventListener('click', onCanvasClicked)
 
   // Text Size Controls
   document.querySelector('.change-size1').addEventListener('click', () => onChangeFontSize(2))
@@ -62,7 +64,10 @@ function addListeners() {
   document.querySelector('.move-line-down').addEventListener('click', () => onMoveLine('down'))
 
   // New Features Controls
-  document.querySelector('.rotate-line').addEventListener('click', onRotateLine)
+  document.querySelector('.rotate-line-left').addEventListener('click', () => onRotateLine('left'))
+  document
+    .querySelector('.rotate-line-right')
+    .addEventListener('click', () => onRotateLine('right'))
   document.querySelector('.btn-flexible').addEventListener('click', onGenerateRandomMeme)
   document.querySelectorAll('.sticker-selector').forEach((sticker) => {
     sticker.addEventListener('click', (e) => onAddSticker(e.target.innerText))
@@ -122,22 +127,12 @@ function renderMeme() {
 // mouse and touch events //
 
 function onMouseDown(ev) {
-  let clickPos
-  if (ev.type === 'touchstart') {
-    ev.preventDefault()
-    const touch = ev.changedTouches[0]
-    clickPos = {
-      x: touch.clientX - ev.target.offsetLeft,
-      y: touch.clientY - ev.target.offsetTop,
-    }
-  } else {
-    clickPos = {
-      x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
-      y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
-    }
-  }
+  ev.preventDefault()
+
+  const clickPos = getPointerPosition(ev)
 
   const meme = getMeme()
+  gIsLineClicked = false
 
   for (let i = 0; i < meme.lines.length; i++) {
     const line = meme.lines[i]
@@ -147,33 +142,21 @@ function onMouseDown(ev) {
       line.pos.x,
       gCtx.measureText(line.txt).width
     )
-    updateEditorForClickedLine()
 
-    if (isPointInRect(clickPos, boundingBox, 10)) {
+    if (isPointInRect(clickPos, boundingBox)) {
+      updateEditorForClickedLine()
       meme.selectedLineIdx = i
       line.isDrag = true
       gStartPos = clickPos
-      // break
+      gIsLineClicked = true
+      break
     }
   }
 }
 
 function onMouseMove(ev) {
-  let currPos
-  if (ev.type === 'touchmove') {
-    ev.preventDefault()
-    const touch = ev.changedTouches[0]
-    currPos = {
-      x: touch.clientX - ev.target.offsetLeft,
-      y: touch.clientY - ev.target.offsetTop,
-    }
-  } else {
-    currPos = {
-      x: ev.offsetX * (gElCanvas.width / gElCanvas.clientWidth),
-      y: ev.offsetY * (gElCanvas.height / gElCanvas.clientHeight),
-    }
-  }
-
+  ev.preventDefault()
+  const currPos = getPointerPosition(ev)
   const meme = getMeme()
   if (meme.selectedLineIdx === -1 || !meme.lines[meme.selectedLineIdx].isDrag || !gStartPos) return
 
@@ -185,32 +168,44 @@ function onMouseMove(ev) {
   selectedLine.pos.y += deltaY
 
   gStartPos = currPos
-
   renderMeme()
 }
 
 function onMouseUp(ev) {
-  if (ev.type === 'touchend') ev.preventDefault()
-
+  ev.preventDefault()
   const meme = getMeme()
-  if (meme.selectedLineIdx === -1) return
-
-  meme.lines[meme.selectedLineIdx].isDrag = false
-
+  if (meme.selectedLineIdx !== -1) {
+    meme.lines[meme.selectedLineIdx].isDrag = false
+  }
   gStartPos = null
 }
+
+// generate random meme //
 
 function onGenerateRandomMeme() {
   generateRandomMeme()
   renderMeme()
 }
 
+// saved memes //
+
 function onSaveMeme() {
   saveMeme()
   showNotification()
 }
 
-// saved memes //
+function showNotification() {
+  const elNotification = document.querySelector('.notification')
+  elNotification.style.display = 'block'
+  elNotification.style.opacity = '1'
+
+  setTimeout(() => {
+    elNotification.style.opacity = '0'
+    setTimeout(() => {
+      elNotification.style.display = 'none'
+    }, 300)
+  }, 2000)
+}
 
 function renderSavedMemes() {
   const savedMemes = getSavedMemes()
@@ -259,17 +254,24 @@ function drawText(line, idx) {
       xPos -= textWidth / 2
       break
   }
+  // Rotate drawing //
+  const centerX = xPos + textWidth / 2
+  const centerY = yPos
 
-  gCtx.fillText(line.txt, xPos, yPos)
-  gCtx.strokeText(line.txt, xPos, yPos)
+  gCtx.save()
+  gCtx.translate(centerX, centerY)
+  gCtx.rotate(((line.rotate || 0) * Math.PI) / 180)
+  gCtx.fillText(line.txt, -textWidth / 2, 0)
+  gCtx.strokeText(line.txt, -textWidth / 2, 0)
+  gCtx.restore()
 
   const { startX, startY, rectWidth, rectHeight } = defineBoundingBox(line, yPos, xPos, textWidth)
 
   const meme = getMeme()
   const currentLine = meme.selectedLineIdx
 
-  if (idx === currentLine && (isInsideText || gIsLineClicked)) {
-    drawBoundingBox(startX, startY, rectWidth, rectHeight)
+  if (idx === currentLine && gIsLineClicked) {
+    drawBoundingBox(startX, startY, rectWidth, rectHeight, line.rotate, centerX, centerY)
   }
 }
 
@@ -334,12 +336,25 @@ function defineBoundingBox(line, yPos, xPos, textWidth) {
   }
 }
 
-function drawBoundingBox(startX, startY, rectWidth, rectHeight) {
+function drawBoundingBox(startX, startY, rectWidth, rectHeight, rotationAngle, centerX, centerY) {
   const padding = 10
+  gCtx.save()
+
+  gCtx.translate(centerX, centerY)
+  gCtx.rotate(((rotationAngle || 0) * Math.PI) / 180)
+
   gCtx.beginPath()
   gCtx.strokeStyle = '#ffffff'
-  gCtx.rect(startX - padding, startY - padding, rectWidth + 2 * padding, rectHeight + 2 * padding)
+
+  gCtx.rect(
+    startX - centerX - padding,
+    startY - centerY - padding,
+    rectWidth + 2 * padding,
+    rectHeight + 2 * padding
+  )
   gCtx.stroke()
+
+  gCtx.restore()
 }
 
 // check clicks on canvas //
@@ -366,14 +381,11 @@ function onCanvasClicked(ev) {
       adjustedY >= startY - padding &&
       adjustedY <= startY + rectHeight + padding
     ) {
-      isInsideText = true
       setLinesProperties(idx, startX, startY, rectWidth, rectHeight)
       meme.selectedLineIdx = idx
-      gIsLineClicked = true
       break
     }
   }
-  if (!isInsideText) gIsLineClicked = false
   renderMeme()
 }
 
@@ -386,6 +398,36 @@ function updateEditorForClickedLine() {
   if (selectedLine === undefined) return
   elTxtInput.value = selectedLine.txt
   elColorInput.value = selectedLine.color
+}
+
+// check if clicked on line //
+
+function isPointInRect(point, rect, space = 10) {
+  return (
+    point.x > rect.startX - space &&
+    point.x < rect.startX + rect.rectWidth + space &&
+    point.y > rect.startY - space &&
+    point.y < rect.startY + rect.rectHeight + space
+  )
+}
+
+// get pointer position //
+
+function getPointerPosition(ev) {
+  const canvasBounds = gElCanvas.getBoundingClientRect()
+  let x, y
+
+  if (ev.type.startsWith('touch')) {
+    x = ev.touches[0].clientX - canvasBounds.left
+    y = ev.touches[0].clientY - canvasBounds.top
+  } else {
+    x = ev.clientX - canvasBounds.left
+    y = ev.clientY - canvasBounds.top
+  }
+
+  x = x * (gElCanvas.width / canvasBounds.width)
+  y = y * (gElCanvas.height / canvasBounds.height)
+  return { x, y }
 }
 
 // delete meme //
@@ -468,8 +510,9 @@ function onChangeTextAlignment(alignment) {
 
 // rotate lines //
 
-function onRotateLine() {
-  alert('Sike! didnt have time')
+function onRotateLine(direction) {
+  rotateLine(direction)
+  renderMeme()
 }
 
 // add stickers //
@@ -581,17 +624,6 @@ function toggleMenu(state) {
   }
 }
 
-// check if clicked on line //
-
-function isPointInRect(point, rect, space = 10) {
-  return (
-    point.x > rect.startX - space &&
-    point.x < rect.startX + rect.rectWidth + space &&
-    point.y > rect.startY - space &&
-    point.y < rect.startY + rect.rectHeight + space
-  )
-}
-
 // Upload User Image //
 
 function onPickImage(ev) {
@@ -636,19 +668,4 @@ function doUploadImg(imgDataUrl, onSuccess) {
   }
   XHR.open('POST', '//ca-upload.com/here/upload.php')
   XHR.send(formData)
-}
-
-// show save notfication //
-
-function showNotification() {
-  const elNotification = document.querySelector('.notification')
-  elNotification.style.display = 'block'
-  elNotification.style.opacity = '1'
-
-  setTimeout(() => {
-    elNotification.style.opacity = '0'
-    setTimeout(() => {
-      elNotification.style.display = 'none'
-    }, 300)
-  }, 2000)
 }

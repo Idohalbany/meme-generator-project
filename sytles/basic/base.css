@@ -83,3 +83,14 @@ header h1 a {
   max-width: 90vw;
   margin: auto;
 }
+
+/* footer */
+
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #edf2f4;
+  font-size: 0.7vw;
+  margin-top: 40px;
+}

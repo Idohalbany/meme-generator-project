@@ -40,6 +40,7 @@ var gMeme = {
       pos: { x: 450, y: 90 },
       width: 0,
       height: 0,
+      rotate: 0,
       isDrag: false,
     },
     {
@@ -52,6 +53,7 @@ var gMeme = {
       pos: { x: 450, y: 150 },
       width: 0,
       height: 0,
+      rotate: 0,
       isDrag: false,
     },
   ],
@@ -184,6 +186,7 @@ function addLine() {
     pos: { x: 450, y: 120 },
     width: 0,
     height: 0,
+    rotate: 0,
     isDrag: false,
   })
   gMeme.selectedLineIdx = gMeme.lines.length - 1
@@ -231,6 +234,18 @@ function switchLine() {
   if (gMeme.selectedLineIdx >= gMeme.lines.length) gMeme.selectedLineIdx = 0
 }
 
+function rotateLine(direction) {
+  if (gMeme.selectedLineIdx === -1) return
+  const rotateDirectionValue = direction === 'left' ? -10 : 10
+  const selectedLine = gMeme.lines[gMeme.selectedLineIdx]
+
+  if (!selectedLine.rotate) {
+    selectedLine.rotate = rotateDirectionValue
+  } else {
+    selectedLine.rotate += rotateDirectionValue
+  }
+}
+
 function addStickerLine(emoji) {
   const meme = getMeme()
   const stickerLine = {
@@ -243,6 +258,7 @@ function addStickerLine(emoji) {
     pos: { x: 400, y: 120 },
     width: 0,
     height: 0,
+    rotate: 0,
     isDrag: false,
   }
   meme.lines.push(stickerLine)
@@ -265,6 +281,7 @@ function resetEditor() {
         pos: { x: 450, y: 90 },
         width: 0,
         height: 0,
+        rotate: 0,
         isDrag: false,
       },
       {
@@ -277,6 +294,7 @@ function resetEditor() {
         pos: { x: 450, y: 150 },
         width: 0,
         height: 0,
+        rotate: 0,
         isDrag: false,
       },
     ],
